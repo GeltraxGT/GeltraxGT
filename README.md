@@ -9,13 +9,9 @@
 
 ## 🌊 The ocean
 
-<table>
-  <tr>
-    <td align="center" valign="middle"><img src="koi-left/koi.gif" width="180" alt="Koi swimming beside the whale" /></td>
-    <td align="center" valign="middle"><a href="https://github.com/PramudithaN/git-tulkun"><img src="https://raw.githubusercontent.com/GeltraxGT/GeltraxGT/output/tulkun/tulkun.gif" width="480" alt="git-tulkun swimming" /></a></td>
-    <td align="center" valign="middle"><img src="koi-right/koi.gif" width="180" alt="Koi swimming beside the whale" /></td>
-  </tr>
-</table>
+<p align="center">
+  <a href="https://github.com/PramudithaN/git-tulkun"><img src="ocean/ocean.gif" width="880" alt="The ocean: my Tulkun whale swimming with koi fish" /></a>
+</p>
 
 <p align="center"><sub>My Tulkun grows with my contributions — a baby calf every January 1st, an adult bull by the end of the year. The koi swim with it, redrawn every night from yesterday's activity.</sub></p>
 
