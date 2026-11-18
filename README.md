@@ -7,13 +7,13 @@
   <img src="https://img.shields.io/github/followers/GeltraxGT?style=flat-square" alt="GitHub followers" />
 </p>
 
-## 🌊 The ocean
+## 🖌️ Drawn with p5.brush
 
 <p align="center">
-  <a href="https://github.com/PramudithaN/git-tulkun"><img src="ocean/ocean.gif" width="880" alt="The ocean: my Tulkun whale swimming with koi fish" /></a>
+  <a href="https://github.com/acamposuribe/p5.brush"><img src="brush/brush.gif" width="880" alt="Three animals drawn from scratch with p5.brush: a fox, an owl, and a turtle" /></a>
 </p>
 
-<p align="center"><sub>My Tulkun grows with my contributions — a baby calf every January 1st, an adult bull by the end of the year. It holds its place while the koi swim past, redrawn every night from yesterday's activity.</sub></p>
+<p align="center"><sub>A fox in a forest clearing, an owl at night, a turtle in a pond — each one drawn stroke by stroke from scratch with <a href="https://github.com/acamposuribe/p5.brush">p5.brush</a> (watercolour, marker, charcoal). The sketch lives in <code>brush/</code> — open <code>index.html</code> to watch it draw.</sub></p>
 
 <p align="center">
   <picture>
