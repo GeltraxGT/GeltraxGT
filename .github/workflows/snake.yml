@@ -1,5 +1,8 @@
 # Contribution snake on its own `snake` branch, so the tulkun workflow's
 # force-push of the `output` branch can never wipe it.
+# Publishes from a fresh temp dir: the snk Action runs in Docker as root,
+# so its dist/ files are root-owned and can't be moved around in the
+# checkout afterwards.
 name: Generate Snake
 
 on:
@@ -23,14 +26,26 @@ jobs:
             dist/github-contribution-grid-snake-dark.svg?palette=github-dark
       - name: Push snake to snake branch
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           mkdir -p /tmp/snake-dist
           cp dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg /tmp/snake-dist/
+          work_dir="$RUNNER_TEMP/snake-publish"
+          rm -rf "$work_dir"
+          mkdir -p "$work_dir"
+          cd "$work_dir"
+          git init -q
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout snake 2>/dev/null || git checkout --orphan snake
-          git rm -rf . --quiet || true
+          remote_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q "$remote_url" snake 2>/dev/null || true
+          if git rev-parse -q --verify FETCH_HEAD >/dev/null 2>&1; then
+            git checkout -q -b snake FETCH_HEAD
+          else
+            git checkout -q --orphan snake
+          fi
           mkdir -p dist
           cp /tmp/snake-dist/*.svg dist/
           git add dist/
@@ -38,5 +53,5 @@ jobs:
             echo "Snake unchanged; nothing to commit."
             exit 0
           fi
-          git commit --quiet -m "chore: update contribution snake"
-          git push --quiet origin snake
+          git commit -q -m "chore: update contribution snake"
+          git push -q "$remote_url" HEAD:snake
