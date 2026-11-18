@@ -1,0 +1,42 @@
+# Contribution snake on its own `snake` branch, so the tulkun workflow's
+# force-push of the `output` branch can never wipe it.
+name: Generate Snake
+
+on:
+  schedule: [{ cron: "30 0 * * *" }]
+  workflow_dispatch:
+  push: { branches: [main] }
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Platane/snk@v3
+        with:
+          github_user_name: GeltraxGT
+          outputs: |
+            dist/github-contribution-grid-snake.svg
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+      - name: Push snake to snake branch
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/snake-dist
+          cp dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg /tmp/snake-dist/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout snake 2>/dev/null || git checkout --orphan snake
+          git rm -rf . --quiet || true
+          mkdir -p dist
+          cp /tmp/snake-dist/*.svg dist/
+          git add dist/
+          if git diff --cached --quiet; then
+            echo "Snake unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit --quiet -m "chore: update contribution snake"
+          git push --quiet origin snake
