@@ -1,5 +1,6 @@
 # Two koi flank the whale: gold on the left, asagi on the right.
-# Copied from yalongwastaken/git-koi examples/profile-workflow.yml and doubled.
+# The git-koi Action downloads into a shared temp dir, so two uses in one
+# job collide -- the two fish run as sequential jobs instead.
 name: Koi
 
 on:
@@ -16,7 +17,7 @@ permissions:
 concurrency: koi
 
 jobs:
-  koi:
+  koi-left:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,19 +25,37 @@ jobs:
         with:
           body: gold
           output-dir: koi-left
-      - uses: yalongwastaken/git-koi@v1
-        with:
-          body: asagi
-          output-dir: koi-right
-      - name: Commit the koi if they changed
+      - name: Commit the koi if it changed
         shell: bash
         run: |
-          git add koi-left/koi.gif koi-right/koi.gif
+          git add koi-left/koi.gif
           if git diff --cached --quiet; then
-            echo "The koi are unchanged; nothing to commit."
+            echo "The koi is unchanged; nothing to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --quiet --message "koi: draw the day's koi"
+          git commit --quiet --message "koi: draw the day's left koi"
+          git push --quiet
+
+  koi-right:
+    needs: koi-left
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: yalongwastaken/git-koi@v1
+        with:
+          body: asagi
+          output-dir: koi-right
+      - name: Commit the koi if it changed
+        shell: bash
+        run: |
+          git add koi-right/koi.gif
+          if git diff --cached --quiet; then
+            echo "The koi is unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --quiet --message "koi: draw the day's right koi"
           git push --quiet
