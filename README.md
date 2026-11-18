@@ -13,7 +13,7 @@
   <a href="https://github.com/PramudithaN/git-tulkun"><img src="ocean/ocean.gif" width="880" alt="The ocean: my Tulkun whale swimming with koi fish" /></a>
 </p>
 
-<p align="center"><sub>My Tulkun grows with my contributions — a baby calf every January 1st, an adult bull by the end of the year. The koi swim with it, redrawn every night from yesterday's activity.</sub></p>
+<p align="center"><sub>My Tulkun grows with my contributions — a baby calf every January 1st, an adult bull by the end of the year. It holds its place while the koi swim past, redrawn every night from yesterday's activity.</sub></p>
 
 <p align="center">
   <picture>
