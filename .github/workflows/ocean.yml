@@ -1,0 +1,42 @@
+# Redraws the single ocean scene (whale + koi swimming together) every
+# night from the latest tulkun and koi GIFs, so the scene stays fresh as
+# the whale grows and the koi change. Runs after the tulkun (00:00),
+# koi (00:20) and snake (00:30) workflows.
+name: Compose Ocean
+
+on:
+  schedule: [{ cron: "0 1 * * *" }]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: ocean
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compose the ocean scene
+        shell: bash
+        run: |
+          pip install --quiet pillow
+          python3 scripts/compose-ocean.py --output ocean/ocean.gif
+      - name: Commit the ocean if it changed
+        shell: bash
+        run: |
+          git add ocean/ocean.gif
+          if git diff --cached --quiet; then
+            echo "Ocean unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --quiet --message "ocean: redraw the whale and koi"
+          git fetch --quiet origin main
+          git rebase --quiet origin/main
+          git push --quiet
