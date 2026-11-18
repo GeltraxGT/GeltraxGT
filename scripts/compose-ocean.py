@@ -6,9 +6,15 @@ Inputs are the animated GIFs the other workflows produce:
   koi-left.gif / koi-right.gif (512x512, 120 frames, transparent) from main
 
 The scene is drawn at low resolution and upscaled with NEAREST so the
-whole ocean keeps the same pixel-art look as the fish. The whale bobs,
-the koi drift around it, seaweed sways and bubbles rise -- all in one
-GIF, so the profile shows one ocean instead of three separate boxes.
+whole ocean keeps the same pixel-art look as the fish.
+
+Motion rules (per the profile owner's direction):
+  - The whale holds ONE place and never drifts; only its own tail
+    S-wave animates.
+  - The koi never circle in place: each one swims straight across the
+    scene and wraps off-screen, so the loop is seamless.
+  - The seabed is detailed: layered rock ridges, boulders with
+    highlights and algae patches, pebbles, and seaweed clusters.
 
 Usage:
   compose-ocean.py [--whale PATH] [--koi-left PATH] [--koi-right PATH]
@@ -55,7 +61,9 @@ def lerp(a, b, t):
 
 
 def draw_background(w, h, frame, n_frames, rng):
-    """Ocean at low res (w//2, h//2): gradient, god rays, seabed, seaweed, bubbles."""
+    """Detailed ocean at low res (w//2, h//2): gradient, god rays,
+    layered rock ridges, boulders with highlights + algae, pebbles,
+    seaweed clusters, rising bubbles."""
     lw, lh = w // 2, h // 2
     img = Image.new("RGB", (lw, lh))
     px = img.load()
@@ -71,27 +79,52 @@ def draw_background(w, h, frame, n_frames, rng):
         draw.polygon([(x0 + sway, 0), (x0 + wd + sway, 0),
                       (x0 + wd - 30 + sway, lh), (x0 - 30 + sway, lh)],
                      fill=(140, 195, 230, alpha))
-    # seabed mounds
-    for cx, cy, rx, ry, col in [(60, lh + 8, 90, 26, (14, 28, 38)),
-                                (200, lh + 12, 110, 30, (10, 22, 32)),
-                                (350, lh + 8, 100, 26, (14, 28, 38)),
-                                (440, lh + 14, 80, 28, (9, 19, 30))]:
-        draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=col)
-    # rocks
-    for (x, y, r) in [(30, lh - 14, 9), (120, lh - 10, 7), (300, lh - 16, 10),
-                      (390, lh - 10, 6), (230, lh - 8, 5)]:
-        draw.ellipse([x - r, y - r, x + r, y - r // 2], fill=(30, 50, 62))
-    # seaweed, swaying with the frame
-    for i, (x, ht) in enumerate([(18, 46), (52, 30), (140, 54), (180, 36),
-                                 (260, 48), (310, 32), (360, 58), (420, 40)]):
-        phase = frame / n_frames * 2 * math.pi + i * 1.7
-        tip = math.sin(phase) * 5
-        pts = []
-        for s in range(9):
-            t = s / 8
-            pts.append((x + math.sin(phase) * 5 * t * t + tip * t, lh - ht * t))
-        draw.line(pts, fill=(26, 62, 36), width=3)
-        draw.line(pts[:3], fill=(52, 102, 58), width=3)
+    # --- seabed: back ridge, darker ---
+    for cx, cy, rx, ry in [(50, lh + 10, 90, 24), (170, lh + 14, 120, 30),
+                           (300, lh + 10, 110, 26), (400, lh + 14, 90, 28)]:
+        draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=(9, 19, 30))
+    # --- boulders, left and right corners, with top highlights ---
+    boulders = [
+        # (cx, cy, r, highlight)
+        (18, lh - 6, 26, (52, 78, 92)), (52, lh - 2, 20, (46, 70, 84)),
+        (88, lh - 8, 16, (52, 78, 92)),
+        (392, lh - 8, 24, (52, 78, 92)), (362, lh - 2, 18, (46, 70, 84)),
+        (205, lh - 2, 14, (44, 66, 80)), (300, lh - 4, 12, (44, 66, 80)),
+    ]
+    for cx, cy, r, hi in boulders:
+        draw.ellipse([cx - r, cy - r, cx + r, cy + r // 2], fill=(16, 30, 42))
+        draw.arc([cx - r, cy - r, cx + r, cy + r // 2],
+                 start=195, end=330, fill=hi)
+        # algae patches growing on the boulder
+        for ax, ay in [(cx - r // 2, cy - r // 2), (cx + r // 3, cy - r // 3),
+                       (cx, cy - r // 2)]:
+            draw.ellipse([ax - 2, ay - 2, ax + 2, ay + 2], fill=(34, 84, 46))
+    # --- front ridge, slightly lighter, with pebbles ---
+    for cx, cy, rx, ry in [(90, lh + 6, 100, 18), (250, lh + 8, 120, 20),
+                           (380, lh + 6, 90, 18)]:
+        draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=(13, 26, 38))
+    pebble_rng = random.Random(99)
+    for _ in range(26):
+        x = pebble_rng.randint(4, lw - 4)
+        y = pebble_rng.randint(lh - 12, lh - 2)
+        r = pebble_rng.randint(1, 3)
+        col = pebble_rng.choice([(38, 60, 72), (28, 48, 60), (48, 72, 84)])
+        draw.ellipse([x - r, y - r, x + r, y], fill=col)
+    # --- seaweed clusters: several blades each, swaying gently ---
+    clusters = [(14, 3), (48, 4), (120, 3), (150, 5), (196, 3),
+                (238, 4), (282, 3), (330, 5), (368, 4), (404, 3)]
+    for ci, (cx, blades) in enumerate(clusters):
+        for b in range(blades):
+            x = cx + (b - blades // 2) * 5
+            ht = 26 + ((ci * 7 + b * 13) % 34)
+            phase = frame / n_frames * 2 * math.pi + (ci + b) * 1.3
+            green = [(26, 62, 36), (34, 84, 46), (44, 102, 56)][(ci + b) % 3]
+            pts = []
+            for s in range(9):
+                t = s / 8
+                pts.append((x + math.sin(phase) * 4 * t * t, lh - ht * t))
+            draw.line(pts, fill=green, width=3 if b % 2 == 0 else 2)
+            draw.point(pts[-1], fill=(70, 140, 82))
     # bubbles rising
     for (x0, speed, size, off) in rng:
         y = (lh - ((frame * speed + off) % (lh + 20))) - 10
@@ -114,18 +147,34 @@ def main():
     args = ap.parse_args()
 
     whale = frames_of(load_gif(args.whale or DEFAULTS["whale"], "whale.gif"))
-    # Erase the tulkun's bottom-left metrics HUD (x 0-260, y 222-280).
-    # The whale itself never dips below y=200 there, so only the text goes.
-    from PIL import ImageDraw as _ID
-    for f in whale:
-        _ID.Draw(f).rectangle([0, 222, 260, 280], fill=(0, 0, 0, 0))
     koi_l = frames_of(load_gif(args.koi_left or DEFAULTS["koi-left"], "koi-left.gif"))
     koi_r = frames_of(load_gif(args.koi_right or DEFAULTS["koi-right"], "koi-right.gif"))
+    # The koi GIFs draw the fish diagonally (head top-right); rotate -40
+    # so the fish swim level, head-first, across the scene.
+    koi_l = [f.rotate(-40, resample=Image.NEAREST, fillcolor=(0, 0, 0, 0))
+             for f in koi_l]
+    koi_r = [f.rotate(-40, resample=Image.NEAREST, fillcolor=(0, 0, 0, 0))
+             for f in koi_r]
+    # The koi GIF itself swims the fish in a full circle over its 120
+    # frames. Use only the level window (frames 112-119, 0-7, where the
+    # fish stays near-horizontal) played forward then back, so the fish
+    # never dives or loops -- only its tail wiggles.
+    def level_window(frames):
+        w = [(112 + k) % len(frames) for k in range(16)]
+        seq = [frames[j] for j in w] + [frames[j] for j in reversed(w)]
+        return seq
+    koi_l = level_window(koi_l)
+    koi_r = level_window(koi_r)
     print(f"whale {len(whale)} frames, koi {len(koi_l)}/{len(koi_r)} frames")
+
+    # Erase the tulkun's bottom-left metrics HUD (x 0-260, y 222-280).
+    # The whale itself never dips below y=200 there, so only the text goes.
+    for f in whale:
+        ImageDraw.Draw(f).rectangle([0, 222, 260, 280], fill=(0, 0, 0, 0))
 
     w, h = args.width, args.height
     n = args.frames
-    # whale: 640x280 -> 400x175 (0.625x); koi: 512 -> 130 / 100
+    # whale: 640x280 -> 400x175; koi: 512 -> 130 / 100
     whale_frames = [f.resize((400, 175), Image.NEAREST) for f in whale]
     koi_l_frames = [f.resize((130, 130), Image.NEAREST) for f in koi_l]
     koi_r_frames = [f.resize((130, 130), Image.NEAREST) for f in koi_r]
@@ -136,26 +185,38 @@ def main():
     bubbles = [(rng.randint(10, w // 2 - 10), rng.uniform(0.5, 1.4),
                 rng.randint(1, 3), rng.randint(0, 200)) for _ in range(16)]
 
+    # The whale holds ONE place: fixed at (360, 130), no bob, no drift.
+    WHALE_X, WHALE_Y = 360, 130
+    # Each koi swims straight across and wraps off-screen. Its total travel
+    # per loop equals its wrap range, so the loop is seamless: at both ends
+    # of the loop the fish is fully off-screen. direction +1 = left->right.
+    # (frames, size, y_base, start_x, direction, flip, wiggle phase)
+    swimmers = [
+        (koi_l_frames, 130, 120, -140, +1, False, 0),
+        (koi_r_frames, 130, 300, w + 10, -1, True, 9),
+        (koi_l_small, 100, 320, 200, +1, False, 17),
+        (koi_r_small, 100, 70, w - 200, -1, True, 24),
+    ]
+
     out = []
     for i in range(n):
-        # whale loop is 48 frames; we take every 2nd, koi every 5th of 120
+        # whale loop is 48 frames; we take every 2nd. Koi use the level
+        # 32-frame ping-pong sequence (tail wiggle only, no circling).
         wi = (i * 2) % len(whale_frames)
-        ki = (i * 5) % len(koi_l_frames)
+        ki = i % len(koi_l_frames)
         frame = draw_background(w, h, i, n, bubbles)
-        bob = round(5 * math.sin(2 * math.pi * i / n))
-        frame.paste(whale_frames[wi], (360, 130 + bob), whale_frames[wi])
-        # gold koi, upper left, drifting right
-        dx = round(24 * math.sin(2 * math.pi * i / n))
-        dy = round(10 * math.sin(2 * math.pi * i / n + 1.2))
-        frame.paste(koi_l_frames[ki], (60 + dx, 120 + dy), koi_l_frames[ki])
-        # asagi koi, lower right, flipped, drifting left
-        fr = koi_r_frames[ki].transpose(Image.FLIP_LEFT_RIGHT)
-        frame.paste(fr, (620 - dx, 290 - dy), fr)
-        # small gold koi, bottom left
-        frame.paste(koi_l_small[ki], (170 - dx, 320 + dy), koi_l_small[ki])
-        # small asagi koi, upper right, flipped
-        fr2 = koi_r_small[ki].transpose(Image.FLIP_LEFT_RIGHT)
-        frame.paste(fr2, (640 + dx, 60 - dy), fr2)
+        frame.paste(whale_frames[wi], (WHALE_X, WHALE_Y), whale_frames[wi])
+        for frames, size, y_base, start_x, direction, flip, phase in swimmers:
+            span = w + 2 * size
+            step = span / n
+            x = start_x + direction * step * i
+            # wrap into [-size, w] so the fish re-enters off-screen
+            x = ((x + size) % span) - size
+            y = y_base + round(9 * math.sin(2 * math.pi * i / n + start_x))
+            fish = frames[(i + phase) % len(frames)]
+            if flip:
+                fish = fish.transpose(Image.FLIP_LEFT_RIGHT)
+            frame.paste(fish, (round(x), y), fish)
         out.append(frame.convert("P", palette=Image.ADAPTIVE, colors=256))
 
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
