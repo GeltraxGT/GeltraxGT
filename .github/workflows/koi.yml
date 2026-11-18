@@ -1,0 +1,42 @@
+# Two koi flank the whale: gold on the left, asagi on the right.
+# Copied from yalongwastaken/git-koi examples/profile-workflow.yml and doubled.
+name: Koi
+
+on:
+  schedule:
+    # Just after midnight UTC, so the koi show the day that just ended.
+    - cron: "20 0 * * *"
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/koi.yml]
+
+permissions:
+  contents: write
+
+concurrency: koi
+
+jobs:
+  koi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: yalongwastaken/git-koi@v1
+        with:
+          body: gold
+          output-dir: koi-left
+      - uses: yalongwastaken/git-koi@v1
+        with:
+          body: asagi
+          output-dir: koi-right
+      - name: Commit the koi if they changed
+        shell: bash
+        run: |
+          git add koi-left/koi.gif koi-right/koi.gif
+          if git diff --cached --quiet; then
+            echo "The koi are unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --quiet --message "koi: draw the day's koi"
+          git push --quiet
