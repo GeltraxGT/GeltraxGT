@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+# Serialise runs: two pushes close together used to race the force-push
+# of the output branch and fail each other.
+concurrency: tulkun
+
 jobs:
   tulkun:
     runs-on: ubuntu-latest
