@@ -102,6 +102,66 @@ function drawStrokes(strokes, p) {
   }
 }
 
+// ── hand-drawn charcoal frame ──────────────────────────────────────────────
+// Deterministic wobble (seeded RNG) so the frame is identical on every frame.
+// A paper mat clears a margin first, so the charcoal reads on every scene,
+// including the dark night scene. Two wobbly lines, corners overshooting
+// like a real hand-drawn sketchbook frame.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function wobblyRectPoints(inset, wob, over) {
+  const rnd = mulberry32(77 + inset);
+  const x0 = inset, y0 = inset, x1 = W - inset, y1 = H - inset;
+  const pts = [];
+  const edge = (ax, ay, bx, by) => {
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.hypot(dx, dy);
+    const n = Math.max(2, Math.round(len / 45));
+    const nx = -dy / len, ny = dx / len; // perpendicular
+    for (let i = 0; i <= n; i++) {
+      const f = i / n;
+      const j = (rnd() - 0.5) * 2 * wob;
+      pts.push([ax + dx * f + nx * j, ay + dy * f + ny * j]);
+    }
+  };
+  edge(x0 - over, y0, x1 + over, y0);   // top, overshooting both corners
+  edge(x1, y0 - over, x1, y1 + over);   // right
+  edge(x1 + over, y1, x0 - over, y1);   // bottom
+  edge(x0, y1 + over, x0, y0 - over);   // left
+  return pts;
+}
+
+const BORDER_OUTER = wobblyRectPoints(9, 2.2, 7);
+const BORDER_INNER = wobblyRectPoints(19, 1.6, 4);
+
+function washPoly(points, color, op) {
+  brush.wash(color, op);
+  brush.polygon(points);
+  clearStroke();
+}
+
+function drawBorder() {
+  // paper mat: 26px margin strips
+  washPoly([[0, 0], [W, 0], [W, 26], [0, 26]], PAPER, 255);
+  washPoly([[0, H - 26], [W, H - 26], [W, H], [0, H]], PAPER, 255);
+  washPoly([[0, 26], [26, 26], [26, H - 26], [0, H - 26]], PAPER, 255);
+  washPoly([[W - 26, 26], [W, 26], [W, H - 26], [W - 26, H - 26]], PAPER, 255);
+  // charcoal double frame
+  brush.set("charcoal", "#2b2118", 2.4);
+  brush.spline(BORDER_OUTER, 0.9);
+  clearStroke();
+  brush.set("charcoal", "#2b2118", 1.1);
+  brush.spline(BORDER_INNER, 0.9);
+  clearStroke();
+}
+
 // ── Scene 0 · a fox in a forest clearing ───────────────────────────────────
 function foxStrokes() {
   const S = [];
@@ -263,6 +323,7 @@ function renderFrame(t) {
   brush.wiggle(1.2);
   if (!sceneCache[si]) sceneCache[si] = SCENE_FNS[si]();
   drawStrokes(sceneCache[si], p);
+  drawBorder();
   brush.pop();
   brush.render();
   return document.querySelector("canvas").toDataURL("image/png");
