@@ -13,7 +13,7 @@
   <a href="https://github.com/acamposuribe/p5.brush"><img src="brush/brush.gif" width="880" alt="Three animals drawn from scratch with p5.brush: a fox, an owl, and a turtle" /></a>
 </p>
 
-<p align="center"><sub>A fox in a forest clearing, an owl at night, a turtle in a pond — each one drawn stroke by stroke from scratch with <a href="https://github.com/acamposuribe/p5.brush">p5.brush</a> (watercolour, marker, charcoal). The sketch lives in <code>brush/</code> — open <code>index.html</code> to watch it draw.</sub></p>
+<p align="center"><sub>A fox in a forest clearing, an owl at night, a turtle in a pond — each one drawn stroke by stroke from scratch with <a href="https://github.com/acamposuribe/p5.brush">p5.brush</a> (watercolour, marker, charcoal), inside a hand-drawn charcoal frame. The sketch lives in <code>brush/</code> — open <code>index.html</code> to watch it draw.</sub></p>
 
 <p align="center">
   <picture>
@@ -21,6 +21,10 @@
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/GeltraxGT/GeltraxGT/snake/dist/github-contribution-grid-snake.svg" />
     <img alt="github contribution grid snake animation" src="https://raw.githubusercontent.com/GeltraxGT/GeltraxGT/snake/dist/github-contribution-grid-snake.svg" />
   </picture>
+</p>
+
+<p align="center">
+  <img src="brush/divider.png" width="880" alt="" />
 </p>
 
 ## 📊 Stats
@@ -36,6 +40,10 @@
 
 <p align="center">
   <img width="98%" src="https://github-readme-activity-graph.vercel.app/graph?username=GeltraxGT&theme=github-dark&hide_border=true" alt="Contribution activity graph" />
+</p>
+
+<p align="center">
+  <img src="brush/divider.png" width="880" alt="" />
 </p>
 
 ## 🛠️ Tech stack
@@ -78,6 +86,10 @@
 <img src="https://img.shields.io/badge/-OpenAI-111?style=flat-square&logo=openai&logoColor=10A37F" />
 <img src="https://img.shields.io/badge/-Cursor-111?style=flat-square&logo=cursor&logoColor=ffffff" />
 
+<p align="center">
+  <img src="brush/divider.png" width="880" alt="" />
+</p>
+
 ## 🚀 What I'm building
 
 | | |
@@ -86,6 +98,10 @@
 | **[Shadows of the Broken Dynasty](https://github.com/Geltrax69/fast-pace)** — third-person wuxia combat game | **[Sepaktraw / UPSTA](https://github.com/Geltrax69/Sepaktraw_2)** — association site + live scores |
 | **[3jsFun2](https://github.com/GeltraxGT/3jsFun2)** — 3D arena shooter in the browser | **[MacCleaner](https://github.com/Geltrax69/mac_TaskManager)** — native macOS task manager in Swift |
 | **[Papier](https://github.com/Geltrax69/Crazy_Wallpaper)** — editorial wallpaper store | **[Simpedu](https://github.com/Geltrax69/new_Company)** — school platform, less manual work |
+
+<p align="center">
+  <img src="brush/divider.png" width="880" alt="" />
+</p>
 
 ## ⚡ How I work
 
